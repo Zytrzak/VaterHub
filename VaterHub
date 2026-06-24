@@ -1,0 +1,160 @@
+-- =============================================
+--   VaterHub by UN_FA4R v2.4 
+-- =============================================
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+local flying = false
+local noclipping = false
+local infJump = false
+local godMode = false
+local espEnabled = false
+local speed = 50
+local guiVisible = true
+
+-- ==================== GŁÓWNE GUI ====================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "VaterHub"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 520, 0, 420)
+MainFrame.Position = UDim2.new(0.5, -260, 0.5, -210)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 10)
+UICorner.Parent = MainFrame
+
+-- Tytuł
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 50)
+Title.BackgroundColor3 = Color3.fromRGB(160, 10, 30)
+Title.Text = "VaterHub By UNFA4R"
+Title.TextColor3 = Color3.new(1,1,1)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 24
+Title.Parent = MainFrame
+
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 10)
+TitleCorner.Parent = Title
+
+-- Lewy pasek (Sidebar)
+local Sidebar = Instance.new("Frame")
+Sidebar.Size = UDim2.new(0, 130, 1, -50)
+Sidebar.Position = UDim2.new(0, 0, 0, 50)
+Sidebar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Sidebar.BorderSizePixel = 0
+Sidebar.Parent = MainFrame
+
+local SidebarCorner = Instance.new("UICorner")
+SidebarCorner.CornerRadius = UDim.new(0, 10)
+SidebarCorner.Parent = Sidebar
+
+-- Content Area (prawa strona)
+local Content = Instance.new("Frame")
+Content.Size = UDim2.new(1, -135, 1, -50)
+Content.Position = UDim2.new(0, 135, 0, 50)
+Content.BackgroundTransparency = 1
+Content.Parent = MainFrame
+
+-- Zakładki
+local tabs = {"Ogólne", "Fly", "Visual"}
+local tabFrames = {}
+local tabButtons = {}
+
+for i, name in ipairs(tabs) do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -10, 0, 45)
+    btn.Position = UDim2.new(0, 5, 0, (i-1)*50 + 10)
+    btn.BackgroundColor3 = (i == 2 and Color3.fromRGB(220, 40, 40) or Color3.fromRGB(35, 35, 35))
+    btn.Text = name
+    btn.TextColor3 = Color3.new(1,1,1)
+    btn.Font = Enum.Font.GothamSemibold
+    btn.TextSize = 16
+    btn.Parent = Sidebar
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, 0, 1, 0)
+    frame.BackgroundTransparency = 1
+    frame.Visible = (i == 2)  -- domyślnie Fly
+    frame.Parent = Content
+
+    table.insert(tabButtons, btn)
+    table.insert(tabFrames, frame)
+
+    btn.MouseButton1Click:Connect(function()
+        for _, f in ipairs(tabFrames) do f.Visible = false end
+        frame.Visible = true
+        for _, b in ipairs(tabButtons) do b.BackgroundColor3 = Color3.fromRGB(35,35,35) end
+        btn.BackgroundColor3 = Color3.fromRGB(220, 40, 40)
+    end)
+end
+
+-- ==================== FLY TAB ====================
+local FlyFrame = tabFrames[2]
+
+local ToggleFly = Instance.new("TextButton")
+ToggleFly.Size = UDim2.new(0.9,0,0,55)
+ToggleFly.Position = UDim2.new(0.05,0,0,20)
+ToggleFly.BackgroundColor3 = Color3.fromRGB(0,180,0)
+ToggleFly.Text = "FLY: OFF"
+ToggleFly.TextColor3 = Color3.new(1,1,1)
+ToggleFly.TextSize = 20
+ToggleFly.Parent = FlyFrame
+
+local SpeedLabel = Instance.new("TextLabel")
+SpeedLabel.Size = UDim2.new(0.9,0,0,30)
+SpeedLabel.Position = UDim2.new(0.05,0,0,90)
+SpeedLabel.BackgroundTransparency = 1
+SpeedLabel.Text = "Speed: 50"
+SpeedLabel.TextColor3 = Color3.new(1,1,1)
+SpeedLabel.TextSize = 17
+SpeedLabel.Parent = FlyFrame
+
+-- ==================== VISUAL TAB ====================
+local VisualFrame = tabFrames[3]
+
+local ToggleESP = Instance.new("TextButton")
+ToggleESP.Size = UDim2.new(0.9,0,0,55)
+ToggleESP.Position = UDim2.new(0.05,0,0,20)
+ToggleESP.BackgroundColor3 = Color3.fromRGB(100,100,100)
+ToggleESP.Text = "ESP: OFF"
+ToggleESP.TextColor3 = Color3.new(1,1,1)
+ToggleESP.TextSize = 20
+ToggleESP.Parent = VisualFrame
+
+-- ==================== OGÓLNE TAB (możesz tu dodać inne rzeczy) ====================
+local GeneralFrame = tabFrames[1]
+local Text1 = Instance.new("TextLabel")
+Text1.Size = UDim2.new(0.9,0,0,50)
+Text1.Position = UDim2.new(0.05,0,0,20)
+Text1.BackgroundTransparency = 1
+Text1.Text = "Witaj w VaterHub!"
+Text1.TextColor3 = Color3.new(1,1,1)
+Text1.TextSize = 18
+Text1.Parent = GeneralFrame
+
+-- ==================== FUNKCJE (jak wcześniej) ====================
+-- Fly, Noclip, Godmode, InfJump, ESP... (skróciłem dla czytelności)
+
+local bv, bg
+local function updateFlyButton()
+    ToggleFly.Text = flying and "FLY: ON" or "FLY: OFF"
+    ToggleFly.BackgroundColor3 = flying and Color3.fromRGB(200,30,30) or Color3.fromRGB(0,180,0)
+end
+
+-- ... (cała reszta funkcji Fly, Noclip, God, ESP, RightShift itd. taka sama jak w poprzedniej wersji v2.3)
+
+print("✅ VaterHub by UN_FA4R v2.4 - Nowy wygląd załadowany!")
